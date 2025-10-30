@@ -1,3 +1,21 @@
+"""
+Scrapy-Einstellungen für das Scrape-Bibliotheken-Projekt.
+
+Diese Datei enthält die Hauptkonfiguration für das Scrapy-Projekt, einschließlich:
+- Bot-Name und Spider-Module
+- Crawling-Verhalten (Delays, Concurrency)
+- Middleware- und Pipeline-Konfiguration
+- User-Agent und robots.txt-Einstellungen
+
+Wichtige Einstellungen:
+- CONCURRENT_REQUESTS_PER_DOMAIN: Limitiert parallele Requests pro Domain
+- DOWNLOAD_DELAY: Wartezeit zwischen Requests (höfliches Crawling)
+- ROBOTSTXT_OBEY: Respektiert robots.txt der Zielseiten
+
+Weitere Informationen:
+https://docs.scrapy.org/en/latest/topics/settings.html
+"""
+
 # Scrapy settings for scrape_bibliotheken project
 #
 # For simplicity, this file contains only settings considered important or
@@ -19,11 +37,15 @@ ADDONS = {}
 #USER_AGENT = "scrape_bibliotheken (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
+# Hinweis: In den Spiders wird diese Einstellung teilweise überschrieben (ROBOTSTXT_OBEY = False)
+# um alle relevanten Bibliotheksseiten crawlen zu können
 ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
+# Limitierung auf 1 Request pro Domain zur gleichen Zeit, um Server nicht zu überlasten
 #CONCURRENT_REQUESTS = 16
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
+# 1 Sekunde Wartezeit zwischen Requests für höfliches Crawling
 DOWNLOAD_DELAY = 1
 
 # Disable cookies (enabled by default)
@@ -84,4 +106,5 @@ DOWNLOAD_DELAY = 1
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
+# UTF-8-Encoding für exportierte Daten (JSON, CSV, etc.)
 FEED_EXPORT_ENCODING = "utf-8"

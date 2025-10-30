@@ -1,7 +1,36 @@
+"""
+Wikipedia-Spider zum Sammeln von Bibliotheksinformationen.
+
+Dieser Spider crawlt die Wikipedia-Seite "Liste deutscher Stadtbibliotheken"
+und extrahiert für jede Bibliothek:
+- Name der Bibliothek
+- Wikipedia-URL
+- Website-URL (falls vorhanden in der Infobox)
+
+Output: JSON-Datei mit Bibliotheksinformationen (bibliotheken.json)
+"""
+
 import scrapy
 
 
 class get_wikipedia(scrapy.Spider):
+    """
+    Spider zum Crawlen der Wikipedia-Liste deutscher Stadtbibliotheken.
+    
+    Dieser Spider:
+    1. Startet auf der Wikipedia-Übersichtsseite für deutsche Stadtbibliotheken
+    2. Folgt Links zu einzelnen Bibliotheks-Artikeln
+    3. Extrahiert die offizielle Website aus der Infobox jedes Artikels
+    
+    Ausgabefelder:
+        name (str): Name der Bibliothek aus Wikipedia
+        wikipedia_url (str): URL des Wikipedia-Artikels
+        website (str oder None): URL der offiziellen Bibliothekswebsite
+        
+    Custom Settings:
+        - USER_AGENT: Simuliert einen modernen Chrome-Browser
+        - ROBOTSTXT_OBEY: False (um alle Bibliotheksartikel zu erreichen)
+    """
     name = "get_wikipedia"
     allowed_domains = ["de.wikipedia.org"]
     start_urls = ["https://de.wikipedia.org/wiki/Liste_deutscher_Stadtbibliotheken"]
@@ -16,7 +45,19 @@ class get_wikipedia(scrapy.Spider):
     }
 
     def parse(self, response):
-        # Hauptinhalt
+        """
+        Parst die Wikipedia-Übersichtsseite und folgt Links zu Bibliotheksartikeln.
+        
+        Diese Methode extrahiert alle Links aus Listen-Elementen im Hauptinhalt
+        und filtert irrelevante Links heraus (Bearbeitungs-Links, rote Links, Listen).
+        
+        Args:
+            response: HTTP-Response der Wikipedia-Übersichtsseite
+            
+        Yields:
+            scrapy.Request: Requests zu einzelnen Bibliotheks-Detailseiten
+        """
+        # Hauptinhalt der Wikipedia-Seite selektieren
         container = response.css("#mw-content-text > div.mw-content-ltr.mw-parser-output")
 
         for a in container.css("ul li a"):
@@ -26,14 +67,15 @@ class get_wikipedia(scrapy.Spider):
             if not href:
                 continue
 
+            # Relative URLs zu absoluten URLs umwandeln
             if href.startswith("/"):
                 href = response.urljoin(href)
 
-            # Filter für irrelevante Links
+            # Filter für irrelevante Links (Bearbeitungs-Links, nicht existierende Seiten, Listen)
             if "action=edit" in href or "redlink=1" in href or "Liste" in href:
                 continue
 
-            # Folge dem Link zur Detailseite
+            # Folge dem Link zur Detailseite der Bibliothek
             yield scrapy.Request(
                 url=href,
                 callback=self.parse_bibliothek,
@@ -41,6 +83,18 @@ class get_wikipedia(scrapy.Spider):
             )
 
     def parse_bibliothek(self, response):
+        """
+        Parst eine einzelne Bibliotheks-Detailseite und extrahiert die Website-URL.
+        
+        Sucht in der Wikipedia-Infobox nach dem "Website"-Feld und extrahiert
+        die verlinkte URL. Die Infobox verwendet die ID "Vorlage_Infobox_Bibliothek".
+        
+        Args:
+            response: HTTP-Response der Bibliotheks-Detailseite
+            
+        Yields:
+            dict: Dictionary mit 'name', 'wikipedia_url' und 'website' Feldern
+        """
         name = response.meta["name"]
         wikipedia_url = response.meta["wikipedia_url"]
 
@@ -49,13 +103,14 @@ class get_wikipedia(scrapy.Spider):
 
         website_url = None
 
+        # Durchsuche alle Zeilen der Infobox nach dem "Website"-Feld
         for row in rows:
             th_text = row.css("th::text").get()
             if th_text and "Website" in th_text:
                 website_url = row.css("td a::attr(href)").get()
                 break
 
-        # relative URLs zu absoluten URLs umwandeln
+        # Relative URLs zu absoluten URLs umwandeln
         if website_url and website_url.startswith("/"):
             website_url = response.urljoin(website_url)
 
