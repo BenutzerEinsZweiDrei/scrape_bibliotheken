@@ -45,7 +45,7 @@ def get_answer(text):
     """
     client = Client()
     response = client.chat.completions.create(
-        model="deepseek-v3",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": text}],
         web_search=True  # Aktiviert Web-Suche für bessere Informationen
     )
@@ -166,3 +166,19 @@ with open("libraries.md", "w", encoding="utf-8") as f:
     f.write(markdown_output)
 
 print("✅ Markdown file 'libraries.md' created successfully!")
+
+prompt = """
+
+Sortiere und Gruppiere die folgende Liste.
+
+Sende als Antwort ein beautiful markdown.
+
+"""
+
+polished_output = get_answer(prompt + markdown_output)
+
+# --- Save to polished.md ---
+with open("polished.md", "w", encoding="utf-8") as f:
+    f.write(polished_output)
+
+print("✅ Markdown file 'polished.md' created successfully!")
