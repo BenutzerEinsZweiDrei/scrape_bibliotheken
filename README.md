@@ -1,23 +1,30 @@
 # [WORK IN PRORESS] scrape_bibliotheken
 Benutzt scrapy um Informationen über die Anmeldung von Bibliotheken zu sammeln
 
-# step 1 
+# Usage
+
+## step 1
 
 move to working dir then:
 
 ```
-python -m scrapy crawl BibliothekenSpider -o bibliotheken.json
+python -m scrapy crawl get_wikipedia -o bibliotheken.json
 ```
 
-# step 2
+debug bibliotheken.json for missing urls
 
-convert to markdown to debug pages
+## step 2
 
 ```
-python json_to_markdown.py
+python -m scrapy crawl keyword_spider -o urls.json
 ```
 
-# step 3
+debug urls.json for missing urls
 
--> write spider to scrape possible pages with information
--> filter for keywords
+## step 3
+
+push through AI to get relevant information with
+
+```
+python parse_with_ai.py
+```
