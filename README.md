@@ -1,5 +1,5 @@
-# [WORK IN PRORESS] scrape_bibliotheken
-Benutzt scrapy um Informationen über die Anmeldung von Bibliotheken zu sammeln
+# scrape_bibliotheken
+Benutzt scrapy und AI um Informationen über die Anmeldung von Bibliotheken zu sammeln
 
 # Usage
 
@@ -28,3 +28,5 @@ push through AI to get relevant information with
 ```
 python parse_with_ai.py
 ```
+
+see result at libraries.md
