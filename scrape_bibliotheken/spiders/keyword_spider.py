@@ -42,15 +42,18 @@ class KeywordSpider(scrapy.Spider):
     
     custom_settings = {
         "USER_AGENT": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; de-DE) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/127.0.0.1 Safari/537.36"
+            "Chrome/128.0.6613.121 Safari/537.36"
         ),
+        "DEFAULT_REQUEST_HEADERS": {
+            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+        },
         "ROBOTSTXT_OBEY": False,
     }
     
     # Keywords zum Suchen nach relevanten Informationen zu Anmeldung und Nutzung
-    keywords = ["faq", "nutzung", "ausleihe", "anmeldung", "mitglied", "benutzung", "ausweis"]
+    keywords = ["information", "service", "antworten", "antwort", "fragen", "frage", "faq", "nutzung", "ausleihe", "anmeldung", "mitglied", "benutzung", "ausweis"]
 
     def __init__(self, config_file="bibliotheken.json", *args, **kwargs):
         """
@@ -109,9 +112,11 @@ class KeywordSpider(scrapy.Spider):
             # Linktext extrahieren und in Kleinbuchstaben umwandeln für case-insensitive Suche
             link_text = (link.css("::text").get(default="") or "").strip().lower()
 
-            # Prüfen, ob eines der Keywords im Linktext vorkommt
-            if any(keyword in link_text for keyword in self.keywords):
-                # Relative URLs zu absoluten URLs umwandeln
+            # Prüfen, ob eines der Keywords im Linktext oder im href vorkommt
+            if (
+                any(keyword in link_text for keyword in self.keywords)
+                or any(keyword in href.lower() for keyword in self.keywords)
+            ):
                 full_url = urljoin(response.url, href)
                 matched_urls.append(full_url)
 
@@ -127,3 +132,4 @@ class KeywordSpider(scrapy.Spider):
                 "source_url": response.url,
                 "matched_urls": ["keine gefunden"]
             }
+
